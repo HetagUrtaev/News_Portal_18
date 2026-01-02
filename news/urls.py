@@ -1,8 +1,7 @@
-from django.urls import path
-from .views import PostList, PostDetail
-
+from django.urls import include, path
 
 urlpatterns = [
-   path('', PostList.as_view()),
-   path('<int:pk>', PostDetail.as_view()),
+
+    path('news/', include(('news.news_urls', 'news'), namespace='news')), #namespace='news' возможно лишнее
+    path('articles/', include(('news.articles_urls', 'articles'), namespace='articles')),
 ]

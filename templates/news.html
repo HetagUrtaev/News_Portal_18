@@ -1,5 +1,7 @@
-{% extends 'flatpages/default.html' %}
+{% extends "flatpages/default.html" %}
 {% load censor %}
+{% load custom_tags %}
+
 
 {% block title %}
 News
@@ -7,26 +9,47 @@ News
 
 {% block content %}
     <h1>Все новости:</h1>
-    <h1>Всего новостей: {{ news|length }}</h1>
+    <form action="" method="get">
+        {{ filterset.form.as_p }}
+        <input type="submit" value="Найти" />
+    </form>
+
+    <h2>Всего новостей: {{ news|length }}</h2>
     <hr>
     {% if news %}
         <table>
             <tr>
-                <td>Заголовок<td>
-                <td>Дата публикации<td>
-                <td>Текст статьи<td>
+                <td>Заголовок</td>
+                <td>Дата публикации</td>
+                <td>Текст статьи</td>
             </tr>
-            <tr>
             {% for post in news %}
-            </tr>
             <tr>
-                <td>{{  post.title | truncatewords:3 | censor }}<td>
-                <td>{{  post.time_in | date:"d.m.Y" }}<td>
-                <td>{{  post.text | truncatechars:20 | censor  }}<td>
+                <td>{{  post.title | truncatewords:3 | censor }}</td>
+                <td>{{  post.time_in | date:"d.m.Y" }}</td>
+                <td>{{  post.text | truncatechars:20 | censor  }}</td>
             </tr>
             {% endfor %}
         </table>
     {% else %}
         <h2>Новостей нет!</h2>
+    {% endif %}
+    {% if page_obj.has_previous %} <!-- если есть предыдущая страница-->
+       <a href="?{% url_replace page=1 %}">1</a> <!-- создает ссылку на первую страницу в пагинации -->
+        {% if page_obj.previous_page_number != 1 %} <!--  проверяет: отличается ли номер предыдущей страницы от 1 -->
+            ...
+            <a href="?{% url_replace page=page_obj.previous_page_number %}"> <!-- ссылка, которая переводит пользователя на предыдущую страницу списка-->
+                {{ page_obj.previous_page_number }}</a>
+        {% endif %} <!-- это закрывающий тег условного оператора-->
+    {% endif %} <!-- это закрывающий тег условного оператора-->
+    {{ page_obj.number }} <!-- это шаблонный тег Django, который выводит номер текущей страницы в пагинации -->
+    {% if page_obj.has_next %} <!-- проверяет, есть ли следующая страница в пагинации.-->
+        <a href="?{% url_replace page=page_obj.next_page_number %}">{{ page_obj.next_page_number }}</a>
+        <!-- ссылка для перехода на следующую страницу пагинации в Django‑приложении.-->
+        {% if paginator.num_pages != page_obj.next_page_number %} <!-- проверяет: не является ли следующая страница последней в пагинации.-->
+            ...
+            <a href="?{% url_replace page=page_obj.paginator.num_pages %}">{{ page_obj.paginator.num_pages }}</a>
+            <!-- ссылка для перехода на последнюю страницу пагинации в Django‑приложении.-->
+        {% endif %}
     {% endif %}
 {% endblock content %}

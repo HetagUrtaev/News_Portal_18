@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models import Sum
 from django.db.models.functions import Coalesce
+from django.urls import reverse
 
 
 class Author(models.Model):
@@ -48,17 +49,21 @@ class Post(models.Model):
     ]
 
     author = models.ForeignKey(Author, on_delete=models.CASCADE)
-    post_type = models.CharField(max_length=2,
+    post_type = models.CharField(
+                                 max_length=2,
                                  choices=POST,
-                                 default=article)
+                                 )
     time_in = models.DateTimeField(auto_now_add=True)
     categories = models.ManyToManyField(Category, through='PostCategory', related_name='posts')
-    title = models.CharField(max_length=250)
+    title = models.CharField(max_length=250, unique=True)
     text = models.TextField()
     rating = models.IntegerField(default=0)
 
     def __str__(self):
         return f'{self.title.title()}: {self.text[:20]}'
+
+    def get_absolute_url(self):
+        return reverse('news:post_detail', args=[str(self.id)])
 
     def preview(self):
         if len(self.text) < 124:
