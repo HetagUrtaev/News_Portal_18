@@ -62,7 +62,7 @@ class NewsEdit(UpdateView):
     def dispatch(self, request, *args, **kwargs):
         obj = self.get_object()
         if obj.post_type != 'NE':
-            return self.handle_no_permission()  # Можно вернуть 403 или redirect
+            return self.handle_no_permission()
         return super().dispatch(request, *args, **kwargs)
 
 class ArticlesEdit(UpdateView):
