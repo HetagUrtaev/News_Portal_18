@@ -1,11 +1,31 @@
 from django.views.generic import (ListView, DetailView,
                                   CreateView, UpdateView,
-                                  DeleteView)
+                                  DeleteView, TemplateView)
 from .models import Post
 from .filters import PostFilter
 from .forms import NewsForm
 from django.urls import reverse_lazy
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.shortcuts import redirect
+from django.contrib.auth.models import Group
+from django.contrib.auth.decorators import login_required
 
+
+class Profile(LoginRequiredMixin, TemplateView):
+    template_name = 'profile.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['is_not_authors'] = not self.request.user.groups.filter(name='authors').exists()
+        return context
+
+@login_required
+def upgrade_me(request):
+    user = request.user
+    authors_group = Group.objects.get(name='authors')
+    if not request.user.groups.filter(name='authors').exists():
+        authors_group.user_set.add(user)
+    return redirect('/')
 
 class PostList(ListView):
     model = Post
@@ -30,7 +50,8 @@ class PostDetail(DetailView):
     template_name = 'news1.html'
     context_object_name = 'news1'
 
-class NewsCreate(CreateView):
+class NewsCreate(PermissionRequiredMixin, CreateView): #создавать новости
+    permission_required = ('news.add_post',)
     form_class = NewsForm
     model = Post
     template_name = 'news_create.html'
@@ -42,7 +63,8 @@ class NewsCreate(CreateView):
         self.object.save()
         return super().form_valid(form)
 
-class ArticlesCreate(CreateView):
+class ArticlesCreate(PermissionRequiredMixin, CreateView): #создавать статьи
+    permission_required = ('news.add_post',)
     form_class = NewsForm
     model = Post
     template_name = 'articles_create.html'
@@ -54,7 +76,8 @@ class ArticlesCreate(CreateView):
         self.object.save()
         return super().form_valid(form)
 
-class NewsEdit(UpdateView):
+class NewsEdit(PermissionRequiredMixin, UpdateView): #редактирование новостей
+    permission_required = ('news.change_post',)
     form_class = NewsForm
     model = Post
     template_name = 'news_create.html'
@@ -65,7 +88,8 @@ class NewsEdit(UpdateView):
             return self.handle_no_permission()
         return super().dispatch(request, *args, **kwargs)
 
-class ArticlesEdit(UpdateView):
+class ArticlesEdit(PermissionRequiredMixin, UpdateView): #редактирование статей
+    permission_required = ('news.change_post',)
     form_class = NewsForm
     model = Post
     template_name = 'articles_create.html'
@@ -76,7 +100,8 @@ class ArticlesEdit(UpdateView):
             return self.handle_no_permission()
         return super().dispatch(request, *args, **kwargs)
 
-class NewsDelete(DeleteView):
+class NewsDelete(PermissionRequiredMixin, DeleteView):
+    permission_required = ('news.delete_post',)
     model = Post
     template_name = 'news_delete.html'
     success_url = reverse_lazy('news:post_list')
@@ -87,7 +112,8 @@ class NewsDelete(DeleteView):
             return self.handle_no_permission()
         return super().dispatch(request, *args, **kwargs)
 
-class ArticlesDelete(DeleteView):
+class ArticlesDelete(PermissionRequiredMixin, DeleteView):
+    permission_required = ('news.delete_post',)
     model = Post
     template_name = 'articles_delete.html'
     success_url = reverse_lazy('news:post_list')

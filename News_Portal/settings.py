@@ -7,7 +7,12 @@ SECRET_KEY = 'django-insecure-h)qnu7ax$*4w$we_epp0_^i!2cl3sqf*z((9)qy&r6r1avjbym
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1']
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -18,7 +23,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'django.contrib.flatpages',
-    'news', 'django_filters',
+    'django_filters',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.yandex',
+    'news',
 ]
 
 SITE_ID = 1
@@ -32,7 +43,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware'
+    'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
+    'allauth.account.middleware.AccountMiddleware'
 ]
 
 ROOT_URLCONF = 'News_Portal.urls'
@@ -40,7 +52,7 @@ ROOT_URLCONF = 'News_Portal.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR), 'templates'], #метка
+        'DIRS': [os.path.join(BASE_DIR), 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -61,6 +73,7 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -91,4 +104,17 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 STATICFILES_DIRS = [
     BASE_DIR / "static"
-]
+                    ]
+
+LOGIN_URL = '/accounts/login/'
+LOGIN_REDIRECT_URL = '/' #URL‑адрес, на который перенаправляется пользователь после успешного входа в систему
+LOGOUT_REDIRECT_URL = '/accounts/login/'
+
+
+ACCOUNT_SIGNUP_FIELDS = ['username*', 'email*', 'password1', 'password2']
+ACCOUNT_UNIQUE_EMAIL = True #каждый адрес электронной почты (email) в системе должен быть уникальным
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_VERIFICATION = 'none'# конфигурационный параметр (обычно в Django‑приложениях с django‑allauth или аналогичными библиотеками), определяющий
+ACCOUNT_LOGIN_METHODS = {'username', 'email'} #Пользователь может войти в аккаунт, указав либо: своё имя пользователя (username); адрес электронной почты (email).
+
+ACCOUNT_FORMS = {'signup': 'news.forms.CommonSignupForm'}

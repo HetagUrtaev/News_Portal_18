@@ -27,3 +27,15 @@ class NewsForm(forms.ModelForm):
                 'max_length' : 'Максимальная длина не может быть больше 250 символов '
             },
         }
+
+from allauth.account.forms import SignupForm
+from django.contrib.auth.models import Group
+
+
+class CommonSignupForm(SignupForm):
+
+    def save(self, request):
+        user = super(CommonSignupForm, self).save(request)
+        basic_group = Group.objects.get(name='common')
+        basic_group.user_set.add(user)
+        return user
